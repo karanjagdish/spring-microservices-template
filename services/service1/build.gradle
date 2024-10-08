@@ -1,0 +1,17 @@
+plugins {
+	id 'microrepo.service-conventions'
+	id 'microrepo.code-quality-conventions'
+}
+
+group = 'com.microrepo'
+version = '0.0.1-SNAPSHOT'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+dependencies {
+	implementation project(':shared:shared1')
+}

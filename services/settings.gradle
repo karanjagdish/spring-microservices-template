@@ -1,0 +1,3 @@
+rootProject.name = 'microtemprepo'
+
+include 'service1', 'service2', 'shared:shared1'

@@ -1,0 +1,24 @@
+plugins {
+    id 'groovy-gradle-plugin'
+}
+
+repositories {
+    gradlePluginPortal() // so that external plugins can be resolved in dependencies section
+}
+
+dependencies {
+
+    // Plugins in service conventions
+    implementation "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    implementation "io.spring.gradle:dependency-management-plugin:${springDepMgmtVersion}"
+    implementation "org.hibernate.orm:hibernate-gradle-plugin:${hibernateVersion}"
+    implementation "org.graalvm.buildtools:native-gradle-plugin:${graalVmNative}"
+    implementation "com.google.cloud.tools:jib-gradle-plugin:3.4.2"
+
+    // Plugins in code quality conventions
+    implementation "com.diffplug.spotless:spotless-plugin-gradle:6.25.0"
+    implementation "com.github.andygoossens:gradle-modernizer-plugin:1.9.3"
+    implementation "io.spring.nohttp:nohttp-gradle:0.0.11"
+    
+    
+}

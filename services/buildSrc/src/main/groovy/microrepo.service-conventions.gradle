@@ -1,0 +1,88 @@
+plugins {
+	id 'java'
+    // To add external plugins, specify the implemenation dependency in buildSrc/build.gradle
+    id 'org.springframework.boot'
+	id 'io.spring.dependency-management'
+	id 'org.hibernate.orm'
+	id 'org.graalvm.buildtools.native'
+	id 'com.google.cloud.tools.jib'
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springCloudVersion', "2023.0.3")
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.flywaydb:flyway-database-postgresql'
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+	runtimeOnly 'org.postgresql:postgresql'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:postgresql'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+hibernate {
+	enhancement {
+		enableAssociationManagement = true
+	}
+}
+
+jib {
+	configurationName = "productionRuntimeClasspath"
+	from {
+		image = "ghcr.io/graalvm/graalvm-community:21.0.2"
+		platforms {
+			platform {
+				architecture = "${findProperty('jibArchitecture') ?: 'amd64'}"
+				os = "linux"
+			}
+		}
+	}
+	to {
+		image = "${name}:latest"
+	}
+	container {
+		entrypoint = ["bash", "-c", "/entrypoint.sh"]
+		ports = ["8080"]
+		environment = [
+				SPRING_OUTPUT_ANSI_ENABLED: "ALWAYS",
+				APP_SLEEP: "0"
+		]
+		creationTime = "USE_CURRENT_TIMESTAMP"
+		user = 1000
+	}
+	extraDirectories {
+		paths = file("src/main/docker/jib")
+		permissions = ["/entrypoint.sh": "755"]
+	}
+}
